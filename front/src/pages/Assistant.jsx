@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
-import { Spark, ArrowUp, Book, Plus, Wifi, Library, Printer, Wrench } from '../components/Icons.jsx';
+import { Spark, ArrowUp, Book, Plus, Wifi, Library, Printer, Wrench, Check, Pin } from '../components/Icons.jsx';
 
 const SUGGESTIONS = [
   { icone: Wifi, texte: 'Comment je me connecte au Wi-Fi du campus ?' },
@@ -29,6 +29,42 @@ export default function Assistant({ user }) {
   const zone = useRef(null);
   const navigate = useNavigate();
   const prenom = user?.nom?.split(' ')[0] || '';
+  const [refs, setRefs] = useState({ categories: [], lieux: [] });
+  const [creation, setCreation] = useState(null); // index du message en cours de création
+
+  // Libellés des catégories et lieux, pour afficher le récapitulatif du signalement proposé
+  useEffect(() => {
+    api('/referentiels').then(setRefs).catch(() => {});
+  }, []);
+  const nomCategorie = (id) => refs.categories.find((c) => c.id === Number(id))?.libelle;
+  const nomLieu = (id) => {
+    const l = refs.lieux.find((x) => x.id === Number(id));
+    return l ? `${l.batiment} · ${l.salle}` : null;
+  };
+
+  // US-05 / RG-10 : l'étudiant valide d'un clic ; le ticket est créé sans quitter la conversation
+  async function creerTicket(index, suggestion) {
+    setCreation(index);
+    const data = new FormData();
+    data.append('categorieId', suggestion.categorieId);
+    data.append('lieuId', suggestion.lieuId);
+    data.append('description', suggestion.description);
+    try {
+      const ticket = await api('/tickets', { method: 'POST', form: data });
+      setMessages((m) => [
+        ...m.map((msg, i) => (i === index ? { ...msg, ticketCree: ticket.numero } : msg)),
+        {
+          role: 'assistant',
+          texte: `C'est fait : votre signalement ${ticket.numero} a été créé et transmis au service compétent. Vous pouvez suivre son avancement dans « Mes demandes ».`,
+          lienTicket: ticket.id,
+        },
+      ]);
+    } catch (err) {
+      setMessages((m) => [...m, { role: 'assistant', texte: `Le signalement n'a pas pu être créé (${err.message}). Vous pouvez compléter le formulaire.`, erreur: true }]);
+    } finally {
+      setCreation(null);
+    }
+  }
 
   // La conversation reste affichée pendant toute la session (critère US-04)
   useEffect(() => {
@@ -104,16 +140,39 @@ export default function Assistant({ user }) {
                   <div className="ai-body">
                     <p className="serif">{m.texte}</p>
                     {m.source && <span className="source-pill"><Book size={13} /> {m.source.titre}</span>}
+                    {m.lienTicket && (
+                      <button className="btn btn-ghost btn-sm lien-ticket" onClick={() => navigate(`/tickets/${m.lienTicket}`)}>
+                        Voir le ticket →
+                      </button>
+                    )}
                     {m.suggestion && (
-                      <div className="action-card">
-                        <div>
-                          <b>Créer un signalement</b>
-                          <small>Je pré-remplis le formulaire à partir de votre message. Vous vérifiez avant d'envoyer.</small>
+                      <div className={`action-card ${m.ticketCree ? 'done' : ''}`}>
+                        <div className="action-text">
+                          <b>{m.ticketCree ? `Signalement ${m.ticketCree} créé` : 'Créer un signalement'}</b>
+                          {m.suggestion.categorieId && m.suggestion.lieuId ? (
+                            <span className="action-recap">
+                              <span className="badge prio-NORMALE"><i />{nomCategorie(m.suggestion.categorieId) || 'Catégorie'}</span>
+                              <span className="action-lieu"><Pin size={13} /> {nomLieu(m.suggestion.lieuId) || 'Lieu'}</span>
+                            </span>
+                          ) : (
+                            <small>Je pré-remplis le formulaire à partir de votre message ; il vous restera à préciser la catégorie ou le lieu.</small>
+                          )}
                         </div>
-                        <button className="btn btn-primary btn-sm"
-                          onClick={() => navigate('/signaler', { state: { suggestion: m.suggestion, fromAssistant: true } })}>
-                          Signaler
-                        </button>
+                        {m.ticketCree ? (
+                          <span className="action-done"><Check size={18} strokeWidth={2.4} /></span>
+                        ) : (
+                          <div className="action-buttons">
+                            <button className="btn btn-ghost btn-sm"
+                              onClick={() => navigate('/signaler', { state: { suggestion: m.suggestion, fromAssistant: true } })}>
+                              {m.suggestion.categorieId && m.suggestion.lieuId ? 'Modifier' : 'Compléter le formulaire'}
+                            </button>
+                            {m.suggestion.categorieId && m.suggestion.lieuId && (
+                              <button className="btn btn-primary btn-sm" disabled={creation !== null} onClick={() => creerTicket(i, m.suggestion)}>
+                                {creation === i ? <span className="spinner" /> : 'Créer le ticket'}
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

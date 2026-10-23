@@ -41,3 +41,5 @@ export const Library = (p) => (<svg {...base(p)}><path d="M4 20.5h16M5.5 17.5v-8
 export const Pin = (p) => (<svg {...base(p)}><path d="M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0113 0c0 5.3-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.3" /></svg>);
 export const Grid = (p) => (<svg {...base(p)}><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" /></svg>);
 export const Refresh = (p) => (<svg {...base(p)}><path d="M20 11.5A8 8 0 006.3 6.3L4 8.5M4 4v4.5h4.5M4 12.5a8 8 0 0013.7 5.2L20 15.5M20 20v-4.5h-4.5" /></svg>);
+export const Download = (p) => (<svg {...base(p)}><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14" /></svg>);
+export const Search = (p) => (<svg {...base(p)}><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>);

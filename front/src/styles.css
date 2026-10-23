@@ -495,3 +495,40 @@ dd { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* --------------------------------------------------------------------------
+   Ajouts : notifications, création depuis l'assistant, export, filtres
+   -------------------------------------------------------------------------- */
+.nav-badge {
+  display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px;
+  border-radius: 999px; background: var(--accent); color: #fff; font-size: .7rem; font-weight: 700; line-height: 1;
+  vertical-align: 1px; animation: pop .45s var(--ease) both;
+}
+tr.updated { background: linear-gradient(90deg, var(--accent-soft), transparent 60%); }
+tr.updated td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.badge.maj-badge { background: var(--accent-soft); color: var(--accent-hover); }
+.badge.maj-badge i { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+.action-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.action-recap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: .84rem; color: var(--text-2); }
+.action-lieu { display: inline-flex; align-items: center; gap: 4px; }
+.action-buttons { display: flex; gap: 8px; flex: none; }
+.action-card.done { border-color: #cfe6d8; background: linear-gradient(180deg, #f8fcf9, #eef7f1); }
+.action-done { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #e2f2e8; color: var(--c-resolu); flex: none; animation: pop .45s var(--ease) both; }
+.lien-ticket { margin-top: 10px; }
+
+.header-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.toolbar select { width: auto; margin: 0; height: 40px; padding: 0 .8rem; font-size: .88rem; }
+.toolbar-count { color: var(--muted); font-size: .85rem; margin-left: auto; }
+.search { position: relative; flex: 1 1 260px; margin: 0; }
+.search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search input { margin: 0; height: 40px; padding-left: 36px; font-size: .9rem; }
+@media (max-width: 760px) {
+  .toolbar select { flex: 1; }
+  .toolbar-count { margin-left: 0; }
+  .action-buttons { justify-content: flex-end; }
+  .header-tools { width: 100%; }
+}
+td .mono { white-space: nowrap; }

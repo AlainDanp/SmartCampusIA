@@ -54,7 +54,7 @@ export default function App() {
         <Routes location={location}>
           <Route path="/login" element={user ? <Navigate to={ACCUEIL[user.role]} replace /> : <Login onLogin={(u) => { setUser(u); navigate(ACCUEIL[u.role]); }} />} />
           <Route path="/signaler" element={<Protege user={user} roles={['ETUDIANT']}><Signaler /></Protege>} />
-          <Route path="/mes-demandes" element={<Protege user={user} roles={['ETUDIANT']}><MesDemandes /></Protege>} />
+          <Route path="/mes-demandes" element={<Protege user={user} roles={['ETUDIANT']}><MesDemandes user={user} /></Protege>} />
           <Route path="/assistant" element={<Protege user={user} roles={['ETUDIANT']}><Assistant user={user} /></Protege>} />
           <Route path="/tickets/:id" element={<Protege user={user}><DetailTicket user={user} /></Protege>} />
           <Route path="/ma-file" element={<Protege user={user} roles={['TECHNICIEN', 'ADMIN']}><MaFile user={user} /></Protege>} />

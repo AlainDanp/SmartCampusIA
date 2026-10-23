@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Spark, Logout, Menu, Close } from './Icons.jsx';
+import { api } from '../api.js';
+import { EVENEMENT, ticketsModifies } from '../notifications.js';
 
 const ROLE_LABEL = { ETUDIANT: 'Étudiant', TECHNICIEN: 'Technicien', ADMIN: 'Administration' };
 
@@ -13,6 +15,27 @@ export default function Navbar({ user, menus, onLogout }) {
   const [indicateur, setIndicateur] = useState({ left: 0, width: 0, visible: false });
   const [ouvert, setOuvert] = useState(false);
   const [defile, setDefile] = useState(false);
+  const [nonLus, setNonLus] = useState(0);
+
+  // Notifications (étudiant) : nombre de tickets dont le statut a changé, rafraîchi toutes les 30 s
+  useEffect(() => {
+    if (user.role !== 'ETUDIANT') return undefined;
+    let actif = true;
+    const verifier = () => api('/tickets/mine')
+      .then((tickets) => actif && setNonLus(ticketsModifies(user, tickets).length))
+      .catch(() => {});
+    verifier();
+    const id = setInterval(verifier, 30000);
+    window.addEventListener(EVENEMENT, verifier);
+    return () => { actif = false; clearInterval(id); window.removeEventListener(EVENEMENT, verifier); };
+  }, [user]);
+
+  const libelle = (to, label) => (
+    <>
+      {label}
+      {to === '/mes-demandes' && nonLus > 0 && <span className="nav-badge" key={nonLus}>{nonLus}</span>}
+    </>
+  );
 
   // Positionne l'indicateur sous le lien actif (et le recalcule au redimensionnement)
   useLayoutEffect(() => {
@@ -24,7 +47,7 @@ export default function Navbar({ user, menus, onLogout }) {
     placer();
     window.addEventListener('resize', placer);
     return () => window.removeEventListener('resize', placer);
-  }, [location.pathname, menus]);
+  }, [location.pathname, menus, nonLus]);
 
   // Ombre de la barre dès que la page défile ; fermeture du menu mobile à chaque navigation
   useEffect(() => {
@@ -53,7 +76,7 @@ export default function Navbar({ user, menus, onLogout }) {
             }}
           />
           {menus.map(([to, label]) => (
-            <NavLink key={to} to={to}>{label}</NavLink>
+            <NavLink key={to} to={to}>{libelle(to, label)}</NavLink>
           ))}
         </nav>
 
@@ -78,7 +101,7 @@ export default function Navbar({ user, menus, onLogout }) {
       <div className={`mobile-menu ${ouvert ? 'open' : ''}`}>
         {menus.map(([to, label], i) => (
           <NavLink key={to} to={to} style={{ transitionDelay: ouvert ? `${60 + i * 40}ms` : '0ms' }}>
-            {label}
+            {libelle(to, label)}
           </NavLink>
         ))}
       </div>

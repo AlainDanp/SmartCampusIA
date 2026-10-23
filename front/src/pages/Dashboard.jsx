@@ -2,10 +2,41 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, formatDate, STATUTS } from '../api.js';
 import { BarList, Donut, useCountUp } from '../components/Charts.jsx';
-import { Alert, Ticket, Wrench, Hourglass, Clock, Pin, Grid, ArrowRight } from '../components/Icons.jsx';
+import { Alert, Ticket, Wrench, Hourglass, Clock, Pin, Grid, ArrowRight, Download } from '../components/Icons.jsx';
 
 const PERIODES = [['semaine', '7 jours'], ['mois', '30 jours'], ['semestre', 'Semestre']];
 const COULEURS_STATUT = { NOUVEAU: 'var(--c-nouveau)', EN_COURS: 'var(--c-encours)', RESOLU: 'var(--c-resolu)' };
+
+// Export CSV des indicateurs (données agrégées uniquement, RG-12) — séparateur « ; » et BOM pour Excel en français
+function exporterCsv(stats, periode) {
+  const libellePeriode = PERIODES.find(([v]) => v === periode)?.[1] || periode;
+  const cellule = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lignes = [
+    ['SmartCampus AI — Indicateurs', `Période : ${libellePeriode}`, `Export du ${new Date().toLocaleString('fr-FR')}`],
+    [],
+    ['Indicateur', 'Valeur'],
+    ['Tickets sur la période', stats.total],
+    ['Tickets résolus', stats.ticketsResolus],
+    ['Tickets en retard (> 24 h sans prise en charge)', stats.enRetard],
+    ['Délai moyen de résolution (heures)', String(stats.delaiMoyenHeures ?? '').replace('.', ',')],
+    ['Incidents critiques non résolus', stats.alertesCritiques.length],
+    [],
+    ['Statut', 'Tickets'], ...stats.parStatut.map((s) => [STATUTS[s.label], s.n]),
+    [],
+    ['Catégorie', 'Tickets'], ...stats.parCategorie.map((c) => [c.label, c.n]),
+    [],
+    ['Lieu', 'Tickets'], ...stats.parLieu.map((l) => [l.label, l.n]),
+  ];
+  const csv = '\uFEFF' + lignes.map((l) => l.map(cellule).join(';')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `smartcampus-indicateurs-${periode}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 function Kpi({ icone: Icone, ton, libelle, valeur, suffixe = '', decimales = 0, detail }) {
   const anime = useCountUp(valeur ?? 0);
@@ -57,6 +88,10 @@ export default function Dashboard({ user }) {
           <h1>Bonjour {prenom}</h1>
           <p className="page-subtitle">Vue d'ensemble des incidents signalés sur la période.</p>
         </div>
+        <div className="header-tools">
+        <button className="btn" onClick={() => exporterCsv(stats, periode)} disabled={!stats}>
+          <Download size={16} /> Exporter CSV
+        </button>
         <div className="segmented" role="tablist" style={{ '--n': PERIODES.length, '--i': index }}>
           <span className="segmented-thumb" />
           {PERIODES.map(([v, label]) => (
@@ -64,6 +99,7 @@ export default function Dashboard({ user }) {
               {label}
             </button>
           ))}
+        </div>
         </div>
       </div>
 
