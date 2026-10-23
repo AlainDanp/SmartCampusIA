@@ -161,3 +161,10 @@ test('Profil : changement de mot de passe (refus si actuel faux, puis succès)',
   // Remise en état pour la démo
   await request(app).patch('/api/profil/mot-de-passe').set(auth('tom')).send({ actuel: 'nouveau-mdp-2026', nouveau: 'demo1234' });
 });
+
+test('Assistant : une salutation reçoit une réponse polie, sans proposition de signalement', async () => {
+  const res = await request(app).post('/api/assistant/chat').set(auth('lea')).send({ message: 'Bonjour !' });
+  assert.strictEqual(res.status, 200);
+  assert.match(res.body.reponse, /Bonjour/);
+  assert.strictEqual(res.body.proposerSignalement, false);
+});

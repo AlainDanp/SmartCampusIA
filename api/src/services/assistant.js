@@ -117,8 +117,26 @@ function viaMotsCles(message, { categories, lieux }) {
   };
 }
 
+// ─── Échanges de politesse : réponse directe, sans FAQ ni proposition de signalement ───
+const POLITESSE = [
+  { motif: /^(bonjour|bonsoir|salut|hello|coucou|hey|hi|yo)\b/, reponse: "Bonjour ! Je suis l'assistant du campus. Posez-moi une question (Wi-Fi, horaires, impressions, carte étudiante…) ou décrivez un problème : je vous aide à le signaler." },
+  { motif: /^(merci|super|parfait|top|genial|ok|d'accord|daccord)\b/, reponse: "Avec plaisir ! N'hésitez pas si vous avez une autre question." },
+  { motif: /^(au revoir|bye|a plus|a bientot|bonne journee|bonne soiree)\b/, reponse: 'Au revoir, bonne journée sur le campus !' },
+  { motif: /^(qui es[- ]tu|tu es qui|que sais[- ]tu faire|aide|help)\b/, reponse: 'Je réponds aux questions fréquentes du campus (Wi-Fi, horaires, bibliothèque, impressions, carte étudiante, mot de passe ENT) et je vous aide à créer un signalement quand quelque chose ne fonctionne pas.' },
+];
+
+function politesse(message) {
+  const txt = normaliser(message).replace(/[!?.,;]+/g, ' ').trim();
+  if (txt.split(/\s+/).length > 6) return null; // une vraie question, même si elle commence par « bonjour »
+  const regle = POLITESSE.find((r) => r.motif.test(txt));
+  return regle && { reponse: regle.reponse, source: null, incidentDetecte: false, suggestion: null, proposerSignalement: false, moteur: 'politesse' };
+}
+
 // ─── Point d'entrée ────────────────────────────────────────────────────
 async function repondre(message, refs) {
+  const salut = politesse(message);
+  if (salut) return salut;
+
   let resultat;
   if (bedrock) {
     try {
