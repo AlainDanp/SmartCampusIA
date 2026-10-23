@@ -81,13 +81,13 @@ export default function Navbar({ user, menus, onLogout }) {
         </nav>
 
         <div className="nav-user">
-          <div className="user-chip">
+          <NavLink to="/profil" className="user-chip" title="Mon profil">
             <span className={`avatar role-${user.role}`}>{initiales(user.nom)}</span>
             <span className="user-meta">
               <span className="user-name">{user.nom}</span>
               <span className="user-role">{ROLE_LABEL[user.role]}</span>
             </span>
-          </div>
+          </NavLink>
           <button className="icon-btn" onClick={onLogout} title="Déconnexion" aria-label="Déconnexion">
             <Logout />
           </button>
@@ -104,6 +104,7 @@ export default function Navbar({ user, menus, onLogout }) {
             {libelle(to, label)}
           </NavLink>
         ))}
+        <NavLink to="/profil" style={{ transitionDelay: ouvert ? `${60 + menus.length * 40}ms` : '0ms' }}>Mon profil</NavLink>
       </div>
     </header>
   );

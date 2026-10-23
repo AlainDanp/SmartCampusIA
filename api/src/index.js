@@ -18,6 +18,7 @@ app.use('/api/referentiels', authenticate, require('./routes/referentiels'));
 app.use('/api/tickets', authenticate, require('./routes/tickets'));
 app.use('/api/assistant', authenticate, require('./routes/assistant'));
 app.use('/api/stats', authenticate, requireRole('ADMIN'), require('./routes/stats'));
+app.use('/api/profil', authenticate, require('./routes/profil'));
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Route inconnue' }));
 

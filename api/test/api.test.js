@@ -138,3 +138,26 @@ test('RG-06 : un ticket « Nouveau » depuis plus de 24 h est relancé une seule
   assert.strictEqual(derniere.commentaire, MESSAGE);
   assert.strictEqual(derniere.auteur, 'Système');
 });
+
+test('Profil : informations du compte et statistiques selon le rôle', async () => {
+  const lea = await request(app).get('/api/profil').set(auth('lea'));
+  assert.strictEqual(lea.status, 200);
+  assert.strictEqual(lea.body.email, 'lea@campus.fr');
+  assert.ok(lea.body.stats.total > 0);
+  assert.strictEqual(lea.body.mot_de_passe, undefined, 'le hash ne doit jamais sortir');
+  const karim = await request(app).get('/api/profil').set(auth('karim'));
+  assert.deepStrictEqual(karim.body.categories, ['Matériel défectueux', 'Problème réseau']);
+});
+
+test('Profil : changement de mot de passe (refus si actuel faux, puis succès)', async () => {
+  let res = await request(app).patch('/api/profil/mot-de-passe').set(auth('tom')).send({ actuel: 'faux', nouveau: 'nouveau-mdp-2026' });
+  assert.strictEqual(res.status, 400);
+  res = await request(app).patch('/api/profil/mot-de-passe').set(auth('tom')).send({ actuel: 'demo1234', nouveau: 'court' });
+  assert.strictEqual(res.status, 400);
+  res = await request(app).patch('/api/profil/mot-de-passe').set(auth('tom')).send({ actuel: 'demo1234', nouveau: 'nouveau-mdp-2026' });
+  assert.strictEqual(res.status, 200);
+  const login = await request(app).post('/api/auth/login').send({ email: 'tom@campus.fr', password: 'nouveau-mdp-2026' });
+  assert.strictEqual(login.status, 200);
+  // Remise en état pour la démo
+  await request(app).patch('/api/profil/mot-de-passe').set(auth('tom')).send({ actuel: 'nouveau-mdp-2026', nouveau: 'demo1234' });
+});

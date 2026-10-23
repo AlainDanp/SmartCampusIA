@@ -9,6 +9,7 @@ import DetailTicket from './pages/DetailTicket.jsx';
 import MaFile from './pages/MaFile.jsx';
 import Assistant from './pages/Assistant.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Profil from './pages/Profil.jsx';
 
 const ACCUEIL = { ETUDIANT: '/mes-demandes', TECHNICIEN: '/ma-file', ADMIN: '/dashboard' };
 
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/tickets/:id" element={<Protege user={user}><DetailTicket user={user} /></Protege>} />
           <Route path="/ma-file" element={<Protege user={user} roles={['TECHNICIEN', 'ADMIN']}><MaFile user={user} /></Protege>} />
           <Route path="/dashboard" element={<Protege user={user} roles={['ADMIN']}><Dashboard user={user} /></Protege>} />
+          <Route path="/profil" element={<Protege user={user}><Profil user={user} onLogout={deconnexion} /></Protege>} />
           <Route path="*" element={<Navigate to={user ? ACCUEIL[user.role] : '/login'} replace />} />
         </Routes>
       </main>
