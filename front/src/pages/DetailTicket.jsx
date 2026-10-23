@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, formatDate, STATUTS } from '../api.js';
 import { StatutBadge, PrioriteBadge, RetardBadge } from '../components/Badges.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 
-const SUIVANT = { NOUVEAU: 'EN_COURS', EN_COURS: 'RESOLU' }; // RG-07
+const SUIVANT = { NOUVEAU: 'EN_COURS', EN_COURS: 'RESOLU' };
 
-// US-02 (détail + historique) et US-03 (mise à jour du statut par le technicien)
 export default function DetailTicket({ user }) {
   const { id } = useParams();
   const [ticket, setTicket] = useState(null);
@@ -16,12 +16,11 @@ export default function DetailTicket({ user }) {
   const [envoi, setEnvoi] = useState(false);
 
   const charger = useCallback(() => {
+    setErreur('');
     api(`/tickets/${id}`).then(setTicket).catch((e) => setErreur(e.message));
   }, [id]);
 
   useEffect(charger, [charger]);
-
-  // Photo récupérée avec le JWT (le bucket S3 n'est jamais public)
   useEffect(() => {
     if (!ticket?.aPhoto) return undefined;
     let url;
@@ -34,7 +33,7 @@ export default function DetailTicket({ user }) {
     const statut = SUIVANT[ticket.statut];
     setErreurMaj('');
     if (statut === 'RESOLU' && !commentaire.trim()) {
-      setErreurMaj('Un commentaire est obligatoire pour passer le ticket à « Résolu »'); // RG-08
+      setErreurMaj('Un commentaire est requis pour clôturer ce ticket.');
       return;
     }
     setEnvoi(true);
@@ -49,54 +48,57 @@ export default function DetailTicket({ user }) {
     }
   }
 
-  if (erreur) return <div className="card narrow"><p className="error">{erreur}</p><Link to="/">Retour</Link></div>;
-  if (!ticket) return <p className="muted">Chargement…</p>;
+  if (erreur) return <div className="card narrow"><p className="error" role="alert">{erreur}</p><Link className="button" to="/">Retour à l’accueil</Link></div>;
+  if (!ticket) return <p className="loading-state" role="status">Chargement du ticket…</p>;
 
   const peutModifier = (user.role === 'ADMIN' || ticket.technicienId === user.id) && SUIVANT[ticket.statut];
+  const commentaireRequis = SUIVANT[ticket.statut] === 'RESOLU';
 
   return (
-    <div className="grid-2">
-      <div className="card">
-        <div className="row between">
-          <h1>{ticket.numero}</h1>
-          <div><PrioriteBadge priorite={ticket.priorite} /> <StatutBadge statut={ticket.statut} /> <RetardBadge enRetard={ticket.enRetard} /></div>
-        </div>
-        <dl>
-          <dt>Catégorie</dt><dd>{ticket.categorie}</dd>
-          <dt>Lieu</dt><dd>{ticket.lieu}</dd>
-          <dt>Description</dt><dd>{ticket.description}</dd>
-          <dt>Signalé par</dt><dd>{ticket.auteur} — {formatDate(ticket.dateCreation)}</dd>
-          <dt>Technicien</dt><dd>{ticket.technicien || 'Non assigné'}</dd>
-          <dt>Dernière mise à jour</dt><dd>{formatDate(ticket.dateMaj)}</dd>
-          {ticket.dateResolution && (<><dt>Résolu le</dt><dd>{formatDate(ticket.dateResolution)}</dd></>)}
-        </dl>
-        {photoUrl && <img className="photo" src={photoUrl} alt="Photo de l'incident" />}
-
-        {peutModifier && (
-          <form className="maj" onSubmit={changerStatut}>
-            <h3>Passer à « {STATUTS[SUIVANT[ticket.statut]]} »</h3>
-            <textarea rows={3} value={commentaire} onChange={(e) => setCommentaire(e.target.value)}
-              placeholder={SUIVANT[ticket.statut] === 'RESOLU' ? 'Commentaire obligatoire : intervention réalisée…' : 'Commentaire (facultatif)'} />
-            {erreurMaj && <p className="error">{erreurMaj}</p>}
-            <button className="primary" disabled={envoi}>{envoi ? 'Mise à jour…' : 'Valider'}</button>
-          </form>
-        )}
+    <div>
+      <PageHeader eyebrow="Suivi d’incident" title={ticket.numero} description={`${ticket.categorie} · ${ticket.lieu}`} actions={<Link className="button" to={user.role === 'ETUDIANT' ? '/mes-demandes' : '/ma-file'}>Retour à la liste</Link>} />
+      <div className="ticket-status-bar">
+        <div><PrioriteBadge priorite={ticket.priorite} /><StatutBadge statut={ticket.statut} /><RetardBadge enRetard={ticket.enRetard} /></div>
+        <span>Dernière mise à jour : {formatDate(ticket.dateMaj)}</span>
       </div>
-
-      <div className="card">
-        <h2>Historique</h2>
-        <ol className="timeline">
-          {ticket.historique.map((h) => (
-            <li key={h.id}>
-              <div className="row between">
-                <StatutBadge statut={h.nouveauStatut} />
-                <span className="muted small">{formatDate(h.date)}</span>
-              </div>
-              <div className="small">par {h.auteur}</div>
-              {h.commentaire && <p className="comment">{h.commentaire}</p>}
-            </li>
-          ))}
-        </ol>
+      <div className="ticket-layout">
+        <section className="card ticket-main">
+          <div className="section-title"><div><p className="eyebrow">Description</p><h2>Informations sur l’incident</h2></div></div>
+          <p className="ticket-description">{ticket.description}</p>
+          <div className="metadata-grid">
+            <div><span>Catégorie</span><strong>{ticket.categorie}</strong></div>
+            <div><span>Lieu</span><strong>{ticket.lieu}</strong></div>
+            <div><span>Signalé par</span><strong>{ticket.auteur}</strong><small>{formatDate(ticket.dateCreation)}</small></div>
+            <div><span>Technicien référent</span><strong>{ticket.technicien || 'Non assigné'}</strong></div>
+            {ticket.dateResolution && <div><span>Résolu le</span><strong>{formatDate(ticket.dateResolution)}</strong></div>}
+          </div>
+          {photoUrl && <div className="incident-photo"><img src={photoUrl} alt="Photo jointe au signalement" /></div>}
+          {peutModifier && (
+            <form className="transition-panel" onSubmit={changerStatut}>
+              <p className="eyebrow">Action d’intervention</p>
+              <h3>Passer à « {STATUTS[SUIVANT[ticket.statut]]} »</h3>
+              <label htmlFor="commentaire-intervention">
+                Commentaire {commentaireRequis ? <span className="required-copy">requis</span> : <span className="optional">facultatif</span>}
+                <textarea id="commentaire-intervention" rows={3} value={commentaire} onChange={(e) => setCommentaire(e.target.value)} required={commentaireRequis} aria-invalid={Boolean(erreurMaj)} aria-describedby={erreurMaj ? 'commentaire-error' : undefined} placeholder={commentaireRequis ? 'Décrivez l’intervention réalisée…' : 'Ajoutez un commentaire pour le demandeur…'} />
+              </label>
+              {erreurMaj && <p className="error" id="commentaire-error" role="alert">{erreurMaj}</p>}
+              <button className="primary" disabled={envoi}>{envoi ? 'Mise à jour…' : 'Valider la mise à jour'}</button>
+            </form>
+          )}
+        </section>
+        <aside className="card history-card">
+          <p className="eyebrow">Traçabilité</p>
+          <h2>Historique</h2>
+          <ol className="timeline">
+            {ticket.historique.map((h) => (
+              <li key={h.id}>
+                <div className="timeline-head"><StatutBadge statut={h.nouveauStatut} /><time>{formatDate(h.date)}</time></div>
+                <div className="timeline-author">par {h.auteur}</div>
+                {h.commentaire && <p className="comment">{h.commentaire}</p>}
+              </li>
+            ))}
+          </ol>
+        </aside>
       </div>
     </div>
   );
