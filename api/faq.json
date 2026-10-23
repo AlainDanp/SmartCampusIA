@@ -1,0 +1,97 @@
+[
+  {
+    "id": "FAQ-WIFI",
+    "titre": "Se connecter au Wi-Fi du campus",
+    "motsCles": [
+      "wifi",
+      "wi-fi",
+      "internet",
+      "reseau",
+      "connexion",
+      "connecter",
+      "eduroam"
+    ],
+    "reponse": "Sélectionnez le réseau « Campus-Etudiants », puis connectez-vous avec vos identifiants école (prenom.nom et mot de passe de l'ENT). Si la page de connexion ne s'affiche pas, ouvrez un navigateur et allez sur n'importe quel site. Le réseau « eduroam » fonctionne aussi avec votre adresse école complète."
+  },
+  {
+    "id": "FAQ-HORAIRES",
+    "titre": "Horaires d'ouverture du campus",
+    "motsCles": [
+      "horaire",
+      "horaires",
+      "ouvert",
+      "ouverture",
+      "heure",
+      "samedi",
+      "dimanche",
+      "week-end"
+    ],
+    "reponse": "Le campus est ouvert du lundi au vendredi de 7h30 à 21h00 et le samedi de 8h00 à 13h00. Il est fermé le dimanche et les jours fériés."
+  },
+  {
+    "id": "FAQ-BIBLIO",
+    "titre": "Horaires de la bibliothèque",
+    "motsCles": [
+      "bibliotheque",
+      "bu",
+      "livre",
+      "emprunt",
+      "emprunter",
+      "horaire",
+      "horaires",
+      "heure",
+      "ferme"
+    ],
+    "reponse": "La bibliothèque est ouverte du lundi au vendredi de 8h30 à 20h00. Vous pouvez emprunter jusqu'à 5 ouvrages pendant 3 semaines avec votre carte étudiante."
+  },
+  {
+    "id": "FAQ-SALLE",
+    "titre": "Réserver une salle de travail",
+    "motsCles": [
+      "reserver",
+      "reservation",
+      "salle de travail",
+      "salle libre",
+      "travail en groupe"
+    ],
+    "reponse": "Les salles de travail se réservent sur l'ENT, rubrique « Réservations ». Une réservation dure 2 heures maximum, renouvelable si personne n'attend. Pensez à annuler si vous ne venez pas."
+  },
+  {
+    "id": "FAQ-IMPRESSION",
+    "titre": "Imprimer sur le campus",
+    "motsCles": [
+      "imprimer",
+      "impression",
+      "imprimante",
+      "photocopie",
+      "scanner"
+    ],
+    "reponse": "Envoyez votre document depuis l'ENT (rubrique « Impressions »), puis badgez votre carte étudiante sur n'importe quelle imprimante du campus pour le récupérer. Chaque étudiant dispose de 200 pages par semestre."
+  },
+  {
+    "id": "FAQ-CARTE",
+    "titre": "Carte étudiante perdue",
+    "motsCles": [
+      "carte",
+      "badge",
+      "perdu",
+      "perdue",
+      "vol",
+      "volee"
+    ],
+    "reponse": "Signalez la perte à l'accueil du bâtiment A : votre carte est désactivée immédiatement. Une nouvelle carte est éditée sous 48 h (10 € de frais)."
+  },
+  {
+    "id": "FAQ-MDP",
+    "titre": "Mot de passe ENT oublié",
+    "motsCles": [
+      "mot de passe",
+      "mdp",
+      "identifiant",
+      "ent",
+      "oublie",
+      "compte bloque"
+    ],
+    "reponse": "Utilisez le lien « Mot de passe oublié » sur la page de connexion de l'ENT. Un lien de réinitialisation est envoyé sur votre adresse personnelle. Si votre compte est bloqué, contactez le support informatique à l'accueil du bâtiment B."
+  }
+]

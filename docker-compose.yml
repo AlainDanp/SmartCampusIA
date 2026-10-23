@@ -1,0 +1,36 @@
+# SmartCampus AI — une seule application Node/Express (front + API + tâche 24 h)
+#
+# En local (avec PostgreSQL) :  docker compose --profile local up --build   → http://localhost
+# Sur l'EC2 (base = RDS) :      docker compose up -d --build                (DATABASE_URL de RDS dans .env)
+# Port 80 déjà pris sur votre PC ? remplacer "80:3000" par "8081:3000".
+
+services:
+  app:
+    build: .
+    ports:
+      - "80:3000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://smartcampus:smartcampus@db:5432/smartcampus}
+    volumes:
+      - uploads:/app/api/uploads      # utilisé seulement si S3_BUCKET est vide (plan B)
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    profiles: ["local"]               # pas lancé sur AWS : on utilise RDS
+    environment:
+      POSTGRES_DB: smartcampus
+      POSTGRES_USER: smartcampus
+      POSTGRES_PASSWORD: smartcampus
+    ports:
+      - "5433:5432"                   # 5433 côté PC : évite le conflit avec un PostgreSQL déjà installé
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./api/db:/docker-entrypoint-initdb.d:ro   # schéma + données de démo au premier lancement
+
+volumes:
+  pgdata:
+  uploads:
