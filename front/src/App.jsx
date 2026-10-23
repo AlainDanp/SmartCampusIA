@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { getUser, logout } from './api.js';
+import Navbar from './components/Navbar.jsx';
 import Login from './pages/Login.jsx';
 import Signaler from './pages/Signaler.jsx';
 import MesDemandes from './pages/MesDemandes.jsx';
@@ -34,6 +35,7 @@ function Protege({ user, roles, children }) {
 export default function App() {
   const [user, setUser] = useState(getUser());
   const navigate = useNavigate();
+  const location = useLocation();
 
   const deconnexion = () => {
     logout();
@@ -41,32 +43,22 @@ export default function App() {
     navigate('/login');
   };
 
+  const pleinEcran = location.pathname === '/login' || location.pathname === '/assistant';
+
   return (
     <div className="app">
-      {user && (
-        <header className="topbar">
-          <span className="brand">SmartCampus <b>AI</b></span>
-          <nav>
-            {MENUS[user.role].map(([to, label]) => (
-              <NavLink key={to} to={to}>{label}</NavLink>
-            ))}
-          </nav>
-          <span className="who">
-            {user.nom} · <small>{user.role.toLowerCase()}</small>
-            <button className="link" onClick={deconnexion}>Déconnexion</button>
-          </span>
-        </header>
-      )}
+      {user && <Navbar user={user} menus={MENUS[user.role]} onLogout={deconnexion} />}
 
-      <main className="page">
-        <Routes>
-          <Route path="/login" element={<Login onLogin={(u) => { setUser(u); navigate(ACCUEIL[u.role]); }} />} />
+      {/* La clé sur le chemin rejoue l'animation d'entrée à chaque changement de page */}
+      <main key={location.pathname} className={`page-transition ${pleinEcran ? 'page-full' : 'page'}`}>
+        <Routes location={location}>
+          <Route path="/login" element={user ? <Navigate to={ACCUEIL[user.role]} replace /> : <Login onLogin={(u) => { setUser(u); navigate(ACCUEIL[u.role]); }} />} />
           <Route path="/signaler" element={<Protege user={user} roles={['ETUDIANT']}><Signaler /></Protege>} />
           <Route path="/mes-demandes" element={<Protege user={user} roles={['ETUDIANT']}><MesDemandes /></Protege>} />
-          <Route path="/assistant" element={<Protege user={user} roles={['ETUDIANT']}><Assistant /></Protege>} />
+          <Route path="/assistant" element={<Protege user={user} roles={['ETUDIANT']}><Assistant user={user} /></Protege>} />
           <Route path="/tickets/:id" element={<Protege user={user}><DetailTicket user={user} /></Protege>} />
           <Route path="/ma-file" element={<Protege user={user} roles={['TECHNICIEN', 'ADMIN']}><MaFile user={user} /></Protege>} />
-          <Route path="/dashboard" element={<Protege user={user} roles={['ADMIN']}><Dashboard /></Protege>} />
+          <Route path="/dashboard" element={<Protege user={user} roles={['ADMIN']}><Dashboard user={user} /></Protege>} />
           <Route path="*" element={<Navigate to={user ? ACCUEIL[user.role] : '/login'} replace />} />
         </Routes>
       </main>

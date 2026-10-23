@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { api } from '../api.js';
+import { PageHeader } from '../components/Badges.jsx';
+import { Check } from '../components/Icons.jsx';
 
 const MAX_MB = 5; // doit correspondre à MAX_PHOTO_MB côté API (RG-02)
 
@@ -70,23 +72,25 @@ export default function Signaler() {
 
   if (cree) {
     return (
-      <div className="card narrow center">
+      <div className="card narrow center success-card">
+        <span className="success-icon"><Check size={28} strokeWidth={2.4} /></span>
         <h2>Signalement enregistré</h2>
         <p className="big">{cree.numero}</p>
         <p>Statut : <b>Nouveau</b>. Vous serez informé(e) de chaque changement dans « Mes demandes ».</p>
         <div className="actions">
-          <Link className="button primary" to={`/tickets/${cree.id}`}>Voir le ticket</Link>
+          <Link className="btn btn-primary" to={`/tickets/${cree.id}`}>Voir le ticket</Link>
           {state?.fromAssistant
-            ? <Link className="button" to="/assistant">Retour à l'assistant</Link>
-            : <button onClick={() => { setCree(null); setForm({ categorieId: '', lieuId: '', description: '' }); setPhoto(null); }}>Nouveau signalement</button>}
+            ? <Link className="btn btn-ghost" to="/assistant">Retour à l'assistant</Link>
+            : <button className="btn btn-ghost" onClick={() => { setCree(null); setForm({ categorieId: '', lieuId: '', description: '' }); setPhoto(null); }}>Nouveau signalement</button>}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="card narrow">
-      <h1>Signaler un incident</h1>
+    <div className="narrow">
+    <PageHeader titre="Signaler un incident" sousTitre="Décrivez le problème, nous l'orientons vers le bon service." />
+    <div className="card">
       {suggestion && <p className="info">Formulaire pré-rempli par l'assistant : vérifiez et corrigez chaque champ avant de valider.</p>}
       <form onSubmit={soumettre} noValidate>
         <label className={erreurs.categorieId ? 'invalid' : ''}>
@@ -122,8 +126,9 @@ export default function Signaler() {
         </label>
 
         {erreurGlobale && <p className="error">{erreurGlobale}</p>}
-        <button className="primary" disabled={envoi}>{envoi ? 'Envoi…' : 'Envoyer le signalement'}</button>
+        <button className="btn btn-primary btn-block" disabled={envoi}>{envoi ? <span className="spinner" /> : 'Envoyer le signalement'}</button>
       </form>
+    </div>
     </div>
   );
 }

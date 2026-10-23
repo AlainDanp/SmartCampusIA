@@ -1,5 +1,5 @@
 // Initialise la base (schéma + données de démo). Usage : npm run db:init
-// Sur AWS : à lancer une fois depuis l'EC2 → docker compose run --rm api npm run db:init
+// Sur AWS : à lancer une fois depuis l'EC2 → docker compose run --rm app npm run db:init
 const fs = require('fs');
 const path = require('path');
 require('../src/env');

@@ -49,17 +49,23 @@ export default function DetailTicket({ user }) {
     }
   }
 
-  if (erreur) return <div className="card narrow"><p className="error">{erreur}</p><Link to="/">Retour</Link></div>;
-  if (!ticket) return <p className="muted">Chargement…</p>;
+  if (erreur) return <div className="card narrow empty-state"><p className="form-error">{erreur}</p><Link className="btn btn-ghost" to="/">Retour à l'accueil</Link></div>;
+  if (!ticket) return <div className="detail-grid"><div className="card skeleton tall" /><div className="card skeleton tall" /></div>;
 
   const peutModifier = (user.role === 'ADMIN' || ticket.technicienId === user.id) && SUIVANT[ticket.statut];
 
   return (
-    <div className="grid-2">
+    <>
+    <button className="back-link" onClick={() => window.history.back()}>← Retour</button>
+    <div className="detail-grid">
       <div className="card">
-        <div className="row between">
-          <h1>{ticket.numero}</h1>
-          <div><PrioriteBadge priorite={ticket.priorite} /> <StatutBadge statut={ticket.statut} /> <RetardBadge enRetard={ticket.enRetard} /></div>
+        <div className="detail-head">
+          <div>
+            <span className="eyebrow mono">{ticket.numero}</span>
+            <h1>{ticket.categorie}</h1>
+            <p className="page-subtitle">{ticket.lieu}</p>
+          </div>
+          <div className="badges"><PrioriteBadge priorite={ticket.priorite} /><StatutBadge statut={ticket.statut} /><RetardBadge enRetard={ticket.enRetard} /></div>
         </div>
         <dl>
           <dt>Catégorie</dt><dd>{ticket.categorie}</dd>
@@ -77,8 +83,8 @@ export default function DetailTicket({ user }) {
             <h3>Passer à « {STATUTS[SUIVANT[ticket.statut]]} »</h3>
             <textarea rows={3} value={commentaire} onChange={(e) => setCommentaire(e.target.value)}
               placeholder={SUIVANT[ticket.statut] === 'RESOLU' ? 'Commentaire obligatoire : intervention réalisée…' : 'Commentaire (facultatif)'} />
-            {erreurMaj && <p className="error">{erreurMaj}</p>}
-            <button className="primary" disabled={envoi}>{envoi ? 'Mise à jour…' : 'Valider'}</button>
+            {erreurMaj && <p className="form-error">{erreurMaj}</p>}
+            <button className="btn btn-primary" disabled={envoi}>{envoi ? <span className="spinner" /> : 'Valider'}</button>
           </form>
         )}
       </div>
@@ -99,5 +105,6 @@ export default function DetailTicket({ user }) {
         </ol>
       </div>
     </div>
+    </>
   );
 }
